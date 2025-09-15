@@ -1,9 +1,17 @@
+<!-- from line richmenu 
+Endpoint_URL:https://thanonhari.github.io/30072568repair/
+LIFF_URL:https://liff.line.me/2007495650-QbyzOvv8 
+const LIFF_ID = "2007495650-QbyzOvv8"; 
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwFrASmRlRDtOaAH2oHIs-wgBfUUlO2X_Gg3IQ5dTg0KMqIjN-tP5zqSRDGomqW7UPn/exec"; 
+ใช้งานได้ ก่อนวันที่ 14/08/2568 App ที่ Deploy แล้วที่นี่
+แก้ไขวันที่ 11/082568 save from on to TRUE from line liff-->
+
 <!DOCTYPE html>
 <html lang="th">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบสารสนเทศเพื่อการแจ้งซ่อมคอมพิวเตอร์1</title>
+    <title>ระบบแจ้งซ่อมครุภัณฑ์</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
@@ -16,7 +24,7 @@
     <div id="app-container" class="min-h-screen flex flex-col">
         <header class="bg-green-800 text-white shadow-md">
             <div class="container mx-auto px-4 py-3 flex justify-between items-center">
-                <h1 class="text-xl font-bold">ระบบสารสนเทศเพื่อการแจ้งซ่อมคอมพิวเตอร์2</h1>
+                <h1 class="text-xl font-bold">ระบบแจ้งซ่อม</h1>
                 <div id="userMenu" class="relative">
                     <button onclick="document.getElementById('userMenuDropdown').classList.toggle('hidden')" class="flex items-center space-x-2">
                         <img id="userProfilePic" class="w-8 h-8 rounded-full bg-yellow-400">
@@ -272,24 +280,26 @@ async function populateTechnicianDropdownOnForm() {
 
     // เก็บข้อมูลฟอร์ม
     const formDataObject = {
-      lineUserId: document.getElementById('lineUserId').value,
-      lineDisplayName: document.getElementById('lineDisplayName').value,
-      linePictureUrl: document.getElementById('linePictureUrl').value,
-      userEmail: document.getElementById('userEmail').value,
-      uuid: document.getElementById('uuid').value,
-      ticketId: document.getElementById('ticketId').value,
-      repairDate: document.getElementById('repairDate').value,
-      repairTime: document.getElementById('repairTime').value,
-      userName: document.getElementById('userName').value,
-      userPosition: document.getElementById('userPosition').value,
-      userDepartment: document.getElementById('userDepartment').value,
-      userPhone: document.getElementById('userPhone').value,
-      userLocation: document.getElementById('userLocation').value,
-      equipmentName: document.getElementById('equipmentName').value,
-      equipmentId: document.getElementById('equipmentId').value,
-      problemDesc: document.getElementById('problemDesc').value,
-      pdpaConsent: document.getElementById('pdpaConsent').checked,
-      role: 'User'
+        lineUserId: document.getElementById('lineUserId').value,
+        lineDisplayName: document.getElementById('lineDisplayName').value,
+        linePictureUrl: document.getElementById('linePictureUrl').value,
+        userEmail: document.getElementById('userEmail').value,
+        uuid: document.getElementById('uuid').value,
+        ticketId: document.getElementById('ticketId').value,
+        repairDate: document.getElementById('repairDate').value,
+        repairTime: document.getElementById('repairTime').value,
+        userName: document.getElementById('userName').value,
+        userPosition: document.getElementById('userPosition').value,
+        userDepartment: document.getElementById('userDepartment').value,
+        userPhone: document.getElementById('userPhone').value,
+        userLocation: document.getElementById('userLocation').value,
+        equipmentName: document.getElementById('equipmentName').value,
+        equipmentId: document.getElementById('equipmentId').value,
+        problemDesc: document.getElementById('problemDesc').value,
+        pdpaConsent: document.getElementById('pdpaConsent').checked,
+        role: 'User',
+        // --- ✨ บรรทัดที่เพิ่มเข้ามาใหม่ --- ✨
+        selectedTechnician: document.getElementById('selectedTechnician').value
     };
     if (imageBase64) {
       formDataObject.imageBase64 = imageBase64;
