@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบแจ้งซ่อมครุภัณฑ์</title>
+    <title>ระบบสารสนเทศเพื่อการแจ้งซ่อมคอมพิวเตอร์1</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
@@ -16,7 +16,7 @@
     <div id="app-container" class="min-h-screen flex flex-col">
         <header class="bg-green-800 text-white shadow-md">
             <div class="container mx-auto px-4 py-3 flex justify-between items-center">
-                <h1 class="text-xl font-bold">ระบบแจ้งซ่อมTKL</h1>
+                <h1 class="text-xl font-bold">ระบบสารสนเทศเพื่อการแจ้งซ่อมคอมพิวเตอร์2</h1>
                 <div id="userMenu" class="relative">
                     <button onclick="document.getElementById('userMenuDropdown').classList.toggle('hidden')" class="flex items-center space-x-2">
                         <img id="userProfilePic" class="w-8 h-8 rounded-full bg-yellow-400">
@@ -31,7 +31,7 @@
 
         <main class="flex-grow container mx-auto px-4 py-6">
             <div id="repairContent" class="bg-white rounded-lg shadow-md p-6">
-                <h2 class="text-xl font-semibold text-green-800 mb-4">แบบฟอร์มแจ้งซ่อมTKL</h2>
+                <h2 class="text-xl font-semibold text-green-800 mb-4">แบบฟอร์มแจ้งซ่อม</h2>
                 <form id="repairForm">
                     <input type="hidden" id="lineUserId" name="lineUserId">
                     <input type="hidden" id="lineDisplayName" name="lineDisplayName">
@@ -68,6 +68,15 @@
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div><label for="equipmentName" class="block text-sm font-medium text-gray-700">ชื่อครุภัณฑ์ <span class="text-red-500">*</span></label><input type="text" id="equipmentName" name="equipmentName" class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md" required></div>
                                     <div><label for="equipmentId" class="block text-sm font-medium text-gray-700">หมายเลขครุภัณฑ์ <span class="text-red-500">*</span></label><input type="text" id="equipmentId" name="equipmentId" class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md" required></div>
+                                    <div>
+                                    <h3 class="text-md font-medium text-gray-700 mb-2">ระบุช่างผู้รับผิดชอบ (ถ้ามี)</h3>
+                                    <select id="selectedTechnician" name="selectedTechnician" class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md">
+                                        <option value="">-- มอบหมายอัตโนมัติในภายหลัง --</option>
+                                        </select>
+                                    <p class="text-xs text-gray-500 mt-1">
+                                        หากไม่แน่ใจ กรุณาเว้นว่างไว้
+                                    </p>
+                                </div>
                                 </div>
                             </div>
                         </div>
@@ -118,6 +127,28 @@
     if (data.error) throw new Error(data.error);
     return data;
   }
+
+  // ใน <script> ของไฟล์ indexoflineoa.html
+
+// ✨ --- เพิ่มฟังก์ชันใหม่นี้เข้าไป --- ✨
+async function populateTechnicianDropdownOnForm() {
+  const selectElement = document.getElementById('selectedTechnician');
+  if (!selectElement) return;
+
+  try {
+    // เราจะใช้ฟังก์ชัน fetchFromApi ที่มีอยู่แล้ว
+    const technicians = await fetchFromApi('getTechnicians');
+
+    if (technicians && technicians.length > 0) {
+      technicians.forEach(tech => {
+        const option = new Option(tech.name, tech.name);
+        selectElement.add(option);
+      });
+    }
+  } catch (error) {
+    console.error('Failed to load technicians:', error);
+  }
+}
 
   document.addEventListener('DOMContentLoaded', async () => {
     const loadingMessage = document.getElementById('loadingMessage');
@@ -185,6 +216,11 @@
       } else {
         equipmentSelect.innerHTML = '<option value="">ไม่พบประวัติ</option>';
       }
+
+      // ✨ --- เพิ่มการเรียกใช้ฟังก์ชันใหม่ที่นี่ --- ✨
+      loadingMessage.textContent = 'กำลังโหลดรายชื่อช่าง...';
+      await populateTechnicianDropdownOnForm();
+      // ✨ --- สิ้นสุดส่วนที่เพิ่ม --- ✨
 
       loadingMessage.classList.add('hidden');
 
