@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบแจ้งซ่อมครุภัณฑ์</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <style>
+        body { font-family: 'Sarabun', sans-serif; background-color: #f5f5f5; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div id="app-container" class="min-h-screen flex flex-col">
+        <header class="bg-green-800 text-white shadow-md">
+            <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+                <h1 class="text-xl font-bold">ระบบแจ้งซ่อมTKL</h1>
+                <div id="userMenu" class="relative">
+                    <button onclick="document.getElementById('userMenuDropdown').classList.toggle('hidden')" class="flex items-center space-x-2">
+                        <img id="userProfilePic" class="w-8 h-8 rounded-full bg-yellow-400">
+                       <span id="userDisplayName" class="text-sm font-medium">Loading...</span>
+                    </button>
+                    <div id="userMenuDropdown" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10 hidden">
+                        <a href="#" onclick="if(liff.isLoggedIn()) { liff.logout(); } liff.closeWindow();" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">ออกจากระบบ</a>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main class="flex-grow container mx-auto px-4 py-6">
+            <div id="repairContent" class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-semibold text-green-800 mb-4">แบบฟอร์มแจ้งซ่อมTKL</h2>
+                <form id="repairForm">
+                    <input type="hidden" id="lineUserId" name="lineUserId">
+                    <input type="hidden" id="lineDisplayName" name="lineDisplayName">
+                    <input type="hidden" id="linePictureUrl" name="linePictureUrl">
+                    <input type="hidden" id="userEmail" name="userEmail">
+                    <input type="hidden" id="uuid" name="uuid">
+                    <input type="hidden" id="ticketId" name="ticketId">
+                    <input type="hidden" id="repairDate" name="repairDate">
+                    <input type="hidden" id="repairTime" name="repairTime">
+                    
+                    <div class="space-y-6">
+                        <div>
+                            <h3 class="text-md font-medium text-gray-700 mb-2">ข้อมูลผู้แจ้ง (จาก LINE)</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 p-3 bg-gray-100 rounded-md">
+                                <div><label for="userName" class="block text-sm font-medium text-gray-700">ชื่อ-นามสกุล <span class="text-red-500">*</span></label><input type="text" id="userName" name="userName" class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md" required></div>
+                                <div><label class="block text-sm font-medium text-gray-500">อีเมล</label><input type="text" id="displayUserEmail" class="w-full mt-1 px-3 py-2 border-gray-200 rounded-md bg-gray-200" readonly></div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h3 class="text-md font-medium text-gray-700 mb-2">ข้อมูลเพิ่มเติม</h3>
+                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div><label for="userPosition" class="block text-sm font-medium text-gray-700">ตำแหน่ง <span class="text-red-500">*</span></label><input type="text" id="userPosition" name="userPosition" class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md" required></div>
+                                <div><label for="userDepartment" class="block text-sm font-medium text-gray-700">หน่วยงาน <span class="text-red-500">*</span></label><input type="text" id="userDepartment" name="userDepartment" class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md" required></div>
+                                <div><label for="userPhone" class="block text-sm font-medium text-gray-700">เบอร์โทรภายใน <span class="text-red-500">*</span></label><input type="text" id="userPhone" name="userPhone" maxlength="4" class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md" required></div>
+                                <div><label for="userLocation" class="block text-sm font-medium text-gray-700">สถานที่ตั้ง <span class="text-red-500">*</span></label><input type="text" id="userLocation" name="userLocation" class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md" required></div>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <h3 class="text-md font-medium text-gray-700 mb-2">ข้อมูลครุภัณฑ์</h3>
+                            <div class="space-y-4">
+                                <div><label for="equipmentHistory" class="block text-sm font-medium text-gray-700">เลือกครุภัณฑ์จากประวัติ (ถ้ามี)</label><select id="equipmentHistory" name="equipmentHistory" class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md" disabled><option value="">กำลังโหลด...</option></select></div>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div><label for="equipmentName" class="block text-sm font-medium text-gray-700">ชื่อครุภัณฑ์ <span class="text-red-500">*</span></label><input type="text" id="equipmentName" name="equipmentName" class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md" required></div>
+                                    <div><label for="equipmentId" class="block text-sm font-medium text-gray-700">หมายเลขครุภัณฑ์ <span class="text-red-500">*</span></label><input type="text" id="equipmentId" name="equipmentId" class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md" required></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div><label for="problemDesc" class="block text-sm font-medium text-gray-700">ลักษณะอาการเสีย <span class="text-red-500">*</span></label><textarea id="problemDesc" name="problemDesc" rows="4" class="w-full mt-1 px-3 py-2 border border-gray-300 rounded-md" required></textarea></div>
+                        <div><label class="block text-sm font-medium text-gray-700">แนบรูปภาพ (ถ้ามี)</label><input type="file" id="imageUpload" name="imageUpload" accept="image/*" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100"><img id="imagePreview" class="hidden mt-2 max-h-40 border p-1 rounded" src="#" alt="Preview"></div>
+                    </div>
+
+                    <div class="mt-6 border-t pt-4">
+                        <label class="flex items-center"><input type="checkbox" id="pdpaConsent" name="pdpaConsent" required class="h-5 w-5 text-green-700 focus:ring-green-500 border-gray-300 rounded"><span class="ml-2 text-sm text-gray-700">ข้าพเจ้ายินยอมให้เก็บรวบรวมและใช้ข้อมูลส่วนบุคคลเพื่อดำเนินการแจ้งซ่อม <span class="text-red-500">*</span></span></label>
+                    </div>
+
+                    <div class="flex justify-center mt-8">
+                        <button type="submit" id="submitButton" class="bg-green-700 hover:bg-green-900 text-white font-medium py-2 px-6 rounded-md disabled:bg-gray-400 disabled:cursor-not-allowed">ส่งแบบฟอร์มแจ้งซ่อม</button>
+                    </div>
+                </form>
+            </div>
+            <div id="loadingMessage" class="text-center text-gray-500 mt-4"><p>กำลังโหลด...</p></div>
+        </main>
+    </div>
+
+    <script>
+  const LIFF_ID = "xxxxxxx";
+  const SCRIPT_URL = "xxxxxxxxxxxxxxxx";
+
+  let imageBase64 = "", imageFileName = "", imageMimeType = "";
+
+  function generateUUID() {
+    return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, c => {
+      const r = (Math.random() * 16) | 0, v = c === "x" ? r : (r & 0x3) | 0x8;
+      return v.toString(16);
+    });
+  }
+  function generateTicketID() {
+    const d = new Date();
+    return `REP${d.getFullYear().toString().slice(-2)}${String(d.getMonth()+1).padStart(2,"0")}${String(d.getDate()).padStart(2,"0")}-${Math.floor(Math.random()*10000).toString().padStart(4,"0")}`;
+  }
+
+  // เรียก API แบบ GET พร้อม error handling
+  async function fetchFromApi(action, params = {}) {
+    const url = new URL(SCRIPT_URL);
+    url.searchParams.append('action', action);
+    for (const k in params) url.searchParams.append(k, params[k]);
+
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`API '${action}' status ${res.status}`);
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    return data;
+  }
+
+  document.addEventListener('DOMContentLoaded', async () => {
+    const loadingMessage = document.getElementById('loadingMessage');
+
+    try {
+      await liff.init({ liffId: LIFF_ID });
+      if (!liff.isLoggedIn()) {
+        liff.login({ redirectUri: window.location.href });
+        return;
+      }
+
+      loadingMessage.textContent = 'กำลังโหลดข้อมูลโปรไฟล์ LINE...';
+      const profile = await liff.getProfile();
+      const decodedToken = await liff.getDecodedIDToken();
+      const userEmail = decodedToken?.email;
+
+      if (!userEmail) {
+        Swal.fire({
+          icon: 'error',
+          title: 'ไม่สามารถดึงอีเมลได้',
+          text: 'กรุณาเปิดสิทธิ์ "email" ใน LINE Developers Console และกดยินยอมในหน้าจอขอสิทธิ์'
+        });
+        return;
+      }
+
+      // เติมข้อมูลจาก LINE Profile
+      document.getElementById('lineUserId').value = profile.userId;
+      document.getElementById('lineDisplayName').value = profile.displayName;
+      document.getElementById('linePictureUrl').value = profile.pictureUrl || '';
+      document.getElementById('userName').value = profile.displayName;
+      document.getElementById('userEmail').value = userEmail;
+      document.getElementById('displayUserEmail').value = userEmail;
+      document.getElementById('userDisplayName').textContent = profile.displayName;
+      if (profile.pictureUrl) document.getElementById('userProfilePic').src = profile.pictureUrl;
+
+      document.getElementById('uuid').value = generateUUID();
+      document.getElementById('ticketId').value = generateTicketID();
+
+      const now = new Date();
+      document.getElementById('repairDate').value = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}-${String(now.getDate()).padStart(2,"0")}`;
+      document.getElementById('repairTime').value = `${String(now.getHours()).padStart(2,"0")}:${String(now.getMinutes()).padStart(2,"0")}`;
+
+      // ดึงรายละเอียดผู้ใช้จาก backend
+      loadingMessage.textContent = 'กำลังโหลดข้อมูลผู้ใช้จากระบบ...';
+      const userDetails = await fetchFromApi('getUserByEmail', { email: userEmail });
+
+      if (userDetails && Object.keys(userDetails).length > 0) {
+        if (userDetails.name) document.getElementById('userName').value = userDetails.name;
+        document.getElementById('userPosition').value = userDetails.position || '';
+        document.getElementById('userDepartment').value = userDetails.department || '';
+        document.getElementById('userPhone').value = userDetails.phone || '';
+        document.getElementById('userLocation').value = userDetails.location || '';
+        if (userDetails.uuid) document.getElementById('uuid').value = userDetails.uuid;
+      }
+
+      // โหลดประวัติครุภัณฑ์
+      loadingMessage.textContent = 'กำลังโหลดประวัติการแจ้งซ่อม...';
+      const equipmentHistory = await fetchFromApi('getEquipmentHistoryForUser', { email: userEmail });
+
+      const equipmentSelect = document.getElementById('equipmentHistory');
+      if (equipmentHistory && equipmentHistory.length > 0) {
+        equipmentSelect.innerHTML = '<option value="">-- เลือกจากประวัติ --</option>';
+        equipmentHistory.forEach(eq => equipmentSelect.add(new Option(`${eq.name} (${eq.id})`, JSON.stringify(eq))));
+        equipmentSelect.disabled = false;
+      } else {
+        equipmentSelect.innerHTML = '<option value="">ไม่พบประวัติ</option>';
+      }
+
+      loadingMessage.classList.add('hidden');
+
+    } catch (err) {
+      console.error("Initialization Error:", err);
+      loadingMessage.textContent = 'เกิดข้อผิดพลาดในการโหลดข้อมูล';
+      Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: `ไม่สามารถโหลดข้อมูลได้: ${err.message}` });
+    }
+  });
+
+  // อัปโหลดรูป (ถ้ามี)
+  document.getElementById('imageUpload').addEventListener('change', (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      document.getElementById('imagePreview').src = e.target.result;
+      document.getElementById('imagePreview').classList.remove('hidden');
+      imageBase64 = e.target.result.split(',')[1];
+    };
+    reader.readAsDataURL(file);
+    imageFileName = file.name;
+    imageMimeType = file.type;
+  });
+
+  // เติมค่าจากประวัติครุภัณฑ์
+  document.getElementById('equipmentHistory').addEventListener('change', (e) => {
+    if (!e.target.value) return;
+    const eq = JSON.parse(e.target.value);
+    document.getElementById('equipmentName').value = eq.name || '';
+    document.getElementById('equipmentId').value = eq.id || '';
+  });
+
+  // ส่งฟอร์มแจ้งซ่อม
+  document.getElementById('repairForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    // ⚠️ หยิบปุ่มใหม่ใน scope นี้ทุกครั้ง (กัน ReferenceError)
+    const submitButton = document.getElementById('submitButton');
+    if (submitButton.disabled) return;
+
+    if (!document.getElementById('pdpaConsent').checked) {
+      Swal.fire({ icon: "warning", title: "กรุณายอมรับเงื่อนไข", text: "คุณต้องยอมรับเงื่อนไขการให้บริการฯ ก่อน" });
+      return;
+    }
+
+    submitButton.disabled = true;
+    Swal.fire({ title: "กำลังส่งข้อมูล...", allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+    // เก็บข้อมูลฟอร์ม
+    const formDataObject = {
+      lineUserId: document.getElementById('lineUserId').value,
+      lineDisplayName: document.getElementById('lineDisplayName').value,
+      linePictureUrl: document.getElementById('linePictureUrl').value,
+      userEmail: document.getElementById('userEmail').value,
+      uuid: document.getElementById('uuid').value,
+      ticketId: document.getElementById('ticketId').value,
+      repairDate: document.getElementById('repairDate').value,
+      repairTime: document.getElementById('repairTime').value,
+      userName: document.getElementById('userName').value,
+      userPosition: document.getElementById('userPosition').value,
+      userDepartment: document.getElementById('userDepartment').value,
+      userPhone: document.getElementById('userPhone').value,
+      userLocation: document.getElementById('userLocation').value,
+      equipmentName: document.getElementById('equipmentName').value,
+      equipmentId: document.getElementById('equipmentId').value,
+      problemDesc: document.getElementById('problemDesc').value,
+      pdpaConsent: document.getElementById('pdpaConsent').checked,
+      role: 'User'
+    };
+    if (imageBase64) {
+      formDataObject.imageBase64 = imageBase64;
+      formDataObject.imageName = imageFileName;
+      formDataObject.imageMimeType = imageMimeType;
+    }
+
+    // ส่งแบบ URLSearchParams + action=submitRepair
+    const params = new URLSearchParams();
+    params.append('action', 'submitRepair'); // สำคัญมาก
+    for (const key in formDataObject) params.append(key, formDataObject[key]);
+
+    try {
+      const response = await fetch(SCRIPT_URL, { method: 'POST', body: params });
+      const result = await response.json();
+
+      if (result.result === 'success') {
+        await Swal.fire({ icon: 'success', title: 'ส่งเรื่องแจ้งซ่อมสำเร็จ!' });
+        if (liff.isInClient()) liff.closeWindow();
+      } else {
+        throw new Error(result.message || 'ไม่สามารถบันทึกข้อมูลได้');
+      }
+    } catch (error) {
+      Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: error.message });
+    } finally {
+      submitButton.disabled = false;
+    }
+  });
+
+  // ฟังก์ชันทดสอบการเชื่อมต่อ
+  async function testConnection() {
+    try {
+      const res = await fetch(`${SCRIPT_URL}?action=test`);
+      const data = await res.json();
+      alert("Connection Test Result: " + data.message);
+    } catch (err) {
+      console.error("Test Failed:", err);
+      alert("Connection Test FAILED. ดู console เพิ่มเติม");
+    }
+  }
+</script>
+
+</body>
+</html>
